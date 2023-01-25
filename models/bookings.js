@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
 
 const bookingSchema = mongoose.Schema({
-  id: [{ type: mongoose.Schema.Types.ObjectId, ref: "trips" }],
-  isPaid: Boolean,
+  trip: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "trips",
+  },
+  isPaid: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Booking = mongoose.model("bookings", bookingSchema);

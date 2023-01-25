@@ -1,9 +1,7 @@
 var express = require("express");
 var router = express.Router();
-const moment = require("moment");
 
 const Booking = require("../models/bookings");
-const Trip = require("../models/trips");
 
 /* GET AllBookings listing. */
 router.get("/", function (req, res) {
@@ -12,28 +10,33 @@ router.get("/", function (req, res) {
   });
 });
 
-/* Post Trips in Bookings with departure, arrival and price. */
+/* Post new Booking listing. */
 router.post("/new", async (req, res) => {
-  const { departure, arrival, date, price } = req.body;
-  Booking.findOne({ departure, arrival, date, price }).then((data) => {
-    if (data === null) {
-      // Creates new document with Trips data
-      const newBookings = new Booking({
-        departure: departure,
-        arrival: arrival,
-        date: date,
-        price: price,
-        isPaid: false,
-      });
+  const { trip } = req.body;
 
-      // Finally save in database
-      newBookings.save().then((newDoc) => {
-        res.json({ Booking: newDoc });
-      });
-    } else {
-      // Trips already exists in database
-      res.json({ result: false, error: "Booking already saved" });
+  if (!trip) {
+    return res.json({ error: "Missing required fields" });
+  }
+
+  // Create a new booking
+  const newBooking = new Booking({ trip });
+  newBooking.save((err, booking) => {
+    if (err) {
+      return res.json({ error: "Error creating booking" });
     }
+    res.json({ booking });
+  });
+});
+
+/* Delete Booking listing. */
+router.delete("/bookings/:id", async (req, res) => {
+  const { id } = req.params;
+
+  Booking.deleteOne({ _id: id }, (err) => {
+    if (err) {
+      return res.json({ error: "Error deleting booking" });
+    }
+    res.json({ message: "Booking deleted successfully" });
   });
 });
 
