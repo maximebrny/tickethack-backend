@@ -11,33 +11,32 @@ router.get("/", function (req, res) {
   });
 });
 
-/* GET Trips matching departure and arrival with date. */
+/* Get Trips listing with matching departure, arrival and date */
 router.get("/match", async (req, res) => {
-  const { departure, arrival, date } = req.body;
+  const { departure, arrival, date } = req.query;
 
   if (!departure || !arrival || !date) {
     return res.json({ error: "Missing required fields" });
   }
 
-  Trip.find(
-    {
-      departure,
-      arrival,
+  try {
+    const startOfDay = moment(date).startOf("day").toDate();
+    const endOfDay = moment(date).endOf("day").toDate();
+    const trips = await Trip.find({
+      departure: { $regex: new RegExp(`^${departure}$`, "i") },
+      arrival: { $regex: new RegExp(`^${arrival}$`, "i") },
       date: {
-        $gte: moment(date).startOf("day"),
-        $lte: moment(date).endOf("day"),
+        $gte: startOfDay,
+        $lte: endOfDay,
       },
-    },
-    (err, trip) => {
-      if (err) {
-        return res.json({ error: "Error searching for trip" });
-      }
-      if (!trip) {
-        return res.json({ error: "Trip not found" });
-      }
-      res.json(trip);
+    });
+    if (!trips) {
+      return res.json({ error: "Trip not found" });
     }
-  );
+    return res.json(trips);
+  } catch (error) {
+    return res.json({ error: "Error searching for trip" });
+  }
 });
 
 module.exports = router;
