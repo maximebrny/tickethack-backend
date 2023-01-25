@@ -13,6 +13,8 @@ router.get("/", function (req, res) {
 
 /* Get Trips listing with matching departure, arrival and date */
 router.get("/match", async (req, res) => {
+  console.log("routes/match");
+
   const { departure, arrival, date } = req.query;
 
   if (!departure || !arrival || !date) {
